@@ -11,6 +11,9 @@ extern "C" {
 #include "stdbool.h"
 
 #include "lvgl.h"
+#if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR >= 2 
+#include "lvgl_private.h" // include needed due breaking changes describe on release notes of LVGL 9.2.0
+#endif
 
 
 /**********************

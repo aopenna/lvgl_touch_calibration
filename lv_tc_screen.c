@@ -5,10 +5,14 @@
 #include "lv_tc_screen.h"
 
 #include "math.h"
+#include <string.h>
 
 #include "lv_tc.h"
 #include "lv_tc_config.h"
 
+#ifdef ESP_PLATFORM
+    #include "esp_log.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -53,6 +57,7 @@ const lv_obj_class_t lv_tc_screen_class = {
     .base_class = &lv_obj_class
 };
 
+static const char *TAG = "lv_tc_screen";
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -78,7 +83,7 @@ void lv_tc_screen_start_with_config(lv_obj_t* screenObj, lv_tc_start_delay_t sta
     lv_tc_screen_t *tCScreenObj = (lv_tc_screen_t*)screenObj;
 
     if(tCScreenObj->recalibrateTimer) {
-        lv_timer_del(tCScreenObj->recalibrateTimer);
+        lv_timer_delete(tCScreenObj->recalibrateTimer);
         tCScreenObj->recalibrateTimer = NULL;
     }
 
@@ -118,6 +123,7 @@ static void lv_tc_screen_constructor(const lv_obj_class_t *class_p, lv_obj_t *ob
     LV_UNUSED(class_p);
     lv_tc_screen_t *tCScreenObj = (lv_tc_screen_t*)obj;
 
+    tCScreenObj->screenObj = *obj;
     tCScreenObj->inputEnabled = true;
     tCScreenObj->startDelayTimer = NULL;
     tCScreenObj->recalibrateTimer = NULL;
@@ -157,7 +163,7 @@ static void lv_tc_screen_constructor(const lv_obj_class_t *class_p, lv_obj_t *ob
     lv_obj_center(recalibrateBtnLabelObj);
 
 
-    tCScreenObj->acceptBtnObj = lv_btn_create(obj);
+    tCScreenObj->acceptBtnObj = lv_button_create(obj);
     lv_obj_set_size(tCScreenObj->acceptBtnObj, lv_pct(35), LV_SIZE_CONTENT);
     lv_obj_add_event_cb(tCScreenObj->acceptBtnObj, lv_tc_screen_accept_btn_click_cb, LV_EVENT_CLICKED, obj);
 
@@ -251,8 +257,8 @@ static void lv_tc_screen_finish(lv_obj_t *screenObj) {
 
     //Update the UI
     lv_label_set_text_static(tCScreenObj->msgLabelObj, LV_TC_READY_MSG);
-    lv_obj_clear_flag(tCScreenObj->recalibrateBtnObj, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_clear_flag(tCScreenObj->acceptBtnObj, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_remove_flag(tCScreenObj->recalibrateBtnObj, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_remove_flag(tCScreenObj->acceptBtnObj, LV_OBJ_FLAG_HIDDEN);
 
     lv_obj_align(tCScreenObj->msgLabelObj, LV_ALIGN_CENTER, 0, -50);
     lv_obj_align_to(tCScreenObj->recalibrateBtnObj, tCScreenObj->msgLabelObj, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
@@ -277,7 +283,7 @@ static void lv_tc_screen_ready(lv_obj_t *screenObj) {
     lv_tc_save_coeff();
 
     if(tCScreenObj->recalibrateTimer) {
-        lv_timer_del(tCScreenObj->recalibrateTimer);
+        lv_timer_delete(tCScreenObj->recalibrateTimer);
         tCScreenObj->recalibrateTimer = NULL;
     }
 
